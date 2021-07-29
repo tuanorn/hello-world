@@ -1,4 +1,4 @@
-# hello-world
+-- ServerScript
 local tweenService = game:GetService("TweenService")
 game.ReplicatedStorage.Shoot.OnServerEvent:Connect(function(player, target, mousepos, gunpos, tool, shootAnim)
 	if game.Workspace:FindFirstChild(player.Name .."BulletTrail") then
@@ -28,4 +28,51 @@ game.ReplicatedStorage.Shoot.OnServerEvent:Connect(function(player, target, mous
 			target.Parent.Humanoid:TakeDamage(10)
 		end
 	end
+end)
+-- Local Script
+local canShoot = true
+local mouse = game.Players.LocalPlayer:GetMouse()
+game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui").Bullets.Text = "Bullets: ".. script.Parent.Bullets.Value .."/"..script.Parent.MaxBullets.Value
+game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Visible = true
+local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+local shootAnimTrack = humanoid:LoadAnimation(script.ShootAnim)
+shootAnimTrack.Looped = false
+shootAnimTrack.Priority = Enum.AnimationPriority.Action
+local reloadAnimTrack = humanoid:LoadAnimation(script.ReloadAnim)
+reloadAnimTrack.Looped = false
+reloadAnimTrack.Priority = Enum.AnimationPriority.Action
+script.Parent.Equipped:Connect(function()
+	game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Visible = true
+	mouse.KeyDown:Connect(function(key)
+		if key == "r" and script.Parent.Bullets.Value ~= script.Parent.MaxBullets.Value then
+			reloadAnimTrack:Play()
+			reloadAnimTrack.Stopped:Connect(function()
+				script.Parent.Bullets.Value = script.Parent.MaxBullets.Value
+				game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Text = "Bullets: ".. script.Parent.Bullets.Value .."/"..script.Parent.MaxBullets.Value
+			end)
+		end
+	end)
+	script.Parent.Activated:Connect(function()
+		if not shootAnimTrack.IsPlaying and not reloadAnimTrack.IsPlaying and script.Parent.Bullets.Value ~= 0 then
+			shootAnimTrack:Play()
+			script.Parent.Bullets.Value = script.Parent.Bullets.Value - 1
+			game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Text = "Bullets: ".. script.Parent.Bullets.Value .."/"..script.Parent.MaxBullets.Value
+			game.ReplicatedStorage.Shoot:FireServer(mouse.Target, mouse.Hit.p, script.Parent.Part.Position, script.Parent, script.ShootAnim)
+		elseif not shootAnimTrack.IsPlaying and not reloadAnimTrack.IsPlaying then
+			reloadAnimTrack:Play()
+			reloadAnimTrack.Stopped:Connect(function()
+				script.Parent.Bullets.Value = script.Parent.MaxBullets.Value
+				game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Text = "Bullets: ".. script.Parent.Bullets.Value .."/"..script.Parent.MaxBullets.Value
+			end)
+		end
+	end)
+	script.Parent.Deactivated:Connect(function()
+		if canShoot == false then
+			shootAnimTrack.Stopped:Wait()
+			canShoot = true
+		end
+	end)
+end)
+script.Parent.Unequipped:Connect(function()
+	game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Visible = false
 end)
