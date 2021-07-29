@@ -42,7 +42,6 @@ local reloadAnimTrack = humanoid:LoadAnimation(script.ReloadAnim)
 reloadAnimTrack.Looped = false
 reloadAnimTrack.Priority = Enum.AnimationPriority.Action
 script.Parent.Equipped:Connect(function()
-	game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Visible = true
 	mouse.KeyDown:Connect(function(key)
 		if key == "r" and script.Parent.Bullets.Value ~= script.Parent.MaxBullets.Value then
 			reloadAnimTrack:Play()
@@ -53,12 +52,12 @@ script.Parent.Equipped:Connect(function()
 		end
 	end)
 	script.Parent.Activated:Connect(function()
-		if not shootAnimTrack.IsPlaying and not reloadAnimTrack.IsPlaying and script.Parent.Bullets.Value ~= 0 then
+		if canShoot == true and script.Parent.Bullets.Value ~= 0 then
 			shootAnimTrack:Play()
 			script.Parent.Bullets.Value = script.Parent.Bullets.Value - 1
 			game.Players.LocalPlayer.PlayerGui.ScreenGui.Bullets.Text = "Bullets: ".. script.Parent.Bullets.Value .."/"..script.Parent.MaxBullets.Value
 			game.ReplicatedStorage.Shoot:FireServer(mouse.Target, mouse.Hit.p, script.Parent.Part.Position, script.Parent, script.ShootAnim)
-		elseif not shootAnimTrack.IsPlaying and not reloadAnimTrack.IsPlaying then
+		else
 			reloadAnimTrack:Play()
 			reloadAnimTrack.Stopped:Connect(function()
 				script.Parent.Bullets.Value = script.Parent.MaxBullets.Value
